@@ -1,0 +1,73 @@
+import sqlite3
+
+conn = sqlite3.connect('usuarios.db')
+conn.execute("CREATE TABLE IF NOT EXISTS usuarios (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT, idade INTEGER, telefone TEXT, email TEXT)")
+
+def menu():
+    while True:
+        print('1 - Cadastrar usuário')
+        print('2 - Listar usuários')
+        print('3 - Deletar usuário')
+        print('4 - Editar usuário')
+        print('5 - Sair')
+
+        try:
+            opcao = int(input('Digite uma opção: '))
+            if opcao in [1, 2, 3, 4, 5]:
+                return opcao
+            else:
+                print('Opção inválida. Tente novamente.')
+        except ValueError:
+            print('Opção inválida. Tente novamente.')
+
+def cadastrar_usuario():
+    nome = input('Digite o nome do usuário: ')
+    idade = int(input('Digite a idade do usuário: '))
+    telefone = input('Digite o telefone do usuário: ')
+    email = input('Digite o email do usuário: ')
+
+    conn.execute("INSERT INTO usuarios (nome, idade, telefone, email) VALUES (?, ?, ?, ?)", (nome, idade, telefone, email))
+    conn.commit()
+    print('Usuário cadastrado com sucesso!')
+
+def listar_usuarios():
+    usuarios = conn.execute("SELECT * FROM usuarios").fetchall()
+
+    for usuario in usuarios:
+        print(f'{usuario[0]} - Nome: {usuario[1]}, Idade: {usuario[2]}, Telefone: {usuario[3]}, Email: {usuario[4]}')
+
+def deletar_usuario():
+    try:
+        id = int(input('Digite o ID do usuário que deseja deletar: '))
+        conn.execute("DELETE FROM usuarios WHERE id = ?", (id,))
+        conn.commit()
+        print('Usuário deletado com sucesso!')
+    except ValueError:
+        print('ID inválido. Tente novamente.')
+
+def editar_usuario():
+    try:
+        id = int(input('Digite o ID do usuário que deseja editar: '))
+        campo = input('Digite o campo que deseja editar (nome, idade, telefone ou email): ')
+        novo_valor = input(f'Digite o novo valor para o campo "{campo}": ')
+
+        conn.execute(f"UPDATE usuarios SET {campo} = ? WHERE id = ?", (novo_valor, id))
+        conn.commit()
+        print('Usuário editado com sucesso!')
+    except ValueError:
+        print('ID inválido. Tente novamente.')
+
+while True:
+    opcao = menu()
+
+    if opcao == 1:
+        cadastrar_usuario()
+    elif opcao == 2:
+        listar_usuarios()
+    elif opcao == 3:
+        deletar_usuario()
+    elif opcao == 4:
+        editar_usuario()
+    elif opcao == 5:
+        conn.close()
+        break
